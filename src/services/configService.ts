@@ -9,6 +9,21 @@ export interface GuildConfig {
   welcomeMessage?: string;
   modLogChannelId?: string;
   twitchAnnounceChannelId?: string;
+  automodEnabled?: boolean;
+  automodSpamEnabled?: boolean;
+  automodCapsEnabled?: boolean;
+  automodLinksEnabled?: boolean;
+  automodWordsEnabled?: boolean;
+  bannedWords?: string[];
+  spamThreshold?: number;
+  capsThreshold?: number;
+}
+
+export interface UserWarnings {
+  userId: string;
+  guildId: string;
+  count: number;
+  lastWarningAt?: number;
 }
 
 const DATA_DIR = './data';
@@ -44,6 +59,7 @@ function saveConfigs(configs: Map<string, GuildConfig>) {
 }
 
 let configs = loadConfigs();
+const warnings = new Map<string, UserWarnings>();
 
 export const configService = {
   async init() {
@@ -96,5 +112,57 @@ export const configService = {
     }
     configs.set(guildId, config);
     saveConfigs(configs);
+  },
+
+  enableAutomod(guildId: string) {
+    const config = this.getConfig(guildId);
+    config.automodEnabled = true;
+    config.automodSpamEnabled = true;
+    config.automodCapsEnabled = true;
+    config.automodLinksEnabled = true;
+    config.automodWordsEnabled = true;
+    config.spamThreshold = config.spamThreshold || 5;
+    config.capsThreshold = config.capsThreshold || 70;
+    config.bannedWords = config.bannedWords || [];
+    configs.set(guildId, config);
+    saveConfigs(configs);
+  },
+
+  disableAutomod(guildId: string) {
+    const config = this.getConfig(guildId);
+    config.automodEnabled = false;
+    configs.set(guildId, config);
+    saveConfigs(configs);
+  },
+
+  setBannedWords(guildId: string, words: string[]) {
+    const config = this.getConfig(guildId);
+    config.bannedWords = words.map((w) => w.toLowerCase());
+    configs.set(guildId, config);
+    saveConfigs(configs);
+  },
+
+  getBannedWords(guildId: string): string[] {
+    const config = this.getConfig(guildId);
+    return config.bannedWords || [];
+  },
+
+  addWarning(userId: string, guildId: string): number {
+    const key = `${guildId}-${userId}`;
+    const userWarnings = warnings.get(key) || { userId, guildId, count: 0 };
+    userWarnings.count += 1;
+    userWarnings.lastWarningAt = Date.now();
+    warnings.set(key, userWarnings);
+    return userWarnings.count;
+  },
+
+  getWarnings(userId: string, guildId: string): number {
+    const key = `${guildId}-${userId}`;
+    return warnings.get(key)?.count || 0;
+  },
+
+  clearWarnings(userId: string, guildId: string) {
+    const key = `${guildId}-${userId}`;
+    warnings.delete(key);
   },
 };

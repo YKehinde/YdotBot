@@ -18,11 +18,13 @@ import { twitchApiService } from './services/twitchApiService.js';
 import { handleTwitchStreamOnline } from './events/twitchStreamOnline.js';
 import { twitchChatService } from './services/twitchChatService.js';
 import { overlayServer } from './services/overlayServer.js';
+import { handleMessageCreate } from './events/messageCreate.js';
 
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent,
     GatewayIntentBits.DirectMessages,
     GatewayIntentBits.GuildModeration,
@@ -67,6 +69,7 @@ client.once('ready', async () => {
 });
 
 client.on('guildMemberAdd', handleGuildMemberAdd);
+client.on('messageCreate', handleMessageCreate);
 
 client.on('interactionCreate', async (interaction: Interaction) => {
   if (!interaction.isChatInputCommand()) return;
@@ -103,7 +106,7 @@ async function start() {
     twitchEventSub.onStreamOnline((event) => handleTwitchStreamOnline(client, event));
     await twitchEventSub.connect();
 
-    await twitchChatService.init();
+    // await twitchChatService.init();
     await overlayServer.start();
 
     await registerCommands();

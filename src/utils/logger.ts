@@ -7,8 +7,8 @@ export const logger = {
   error: (label: string, message: string, error?: unknown) => {
     console.error(`[${timestamp()}] [ERROR] [${label}] ${message}`, error || '');
   },
-  warn: (label: string, message: string) => {
-    console.warn(`[${timestamp()}] [WARN] [${label}] ${message}`);
+  warn: (label: string, message: string, error?: unknown) => {
+    console.warn(`[${timestamp()}] [WARN] [${label}] ${message}`, error || '');
   },
   debug: (label: string, message: string) => {
     console.log(`[${timestamp()}] [DEBUG] [${label}] ${message}`);
