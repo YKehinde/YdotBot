@@ -135,6 +135,17 @@ export const twitchChatService = {
       await client?.say(channel, `Queue${status}: ${queueList}${queue.length > 5 ? ` +${queue.length - 5}` : ''}`);
     });
 
+    registerCommand('discord', async (channel) => {
+      if (env.discordServerUrl) {
+        await client?.say(channel, `🎮 Join our Discord: ${env.discordServerUrl}`);
+      } else {
+        await client?.say(
+          channel,
+          'Discord server link not configured. Contact the streamer!'
+        );
+      }
+    });
+
     registerCommand('join', async (channel, userstate) => {
       const username = userstate.username!;
       const userId = userstate['user-id']!;

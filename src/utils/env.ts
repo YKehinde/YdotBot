@@ -11,6 +11,7 @@ dotenv.config({
 export const env = {
   discordToken: process.env.DISCORD_TOKEN || '',
   discordClientId: process.env.DISCORD_CLIENT_ID || '',
+  discordServerUrl: process.env.DISCORD_SERVER_URL || '',
   twitchClientId: process.env.TWITCH_CLIENT_ID || '',
   twitchClientSecret: process.env.TWITCH_CLIENT_SECRET || '',
   twitchChannel: process.env.TWITCH_CHANNEL || '',
