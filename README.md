@@ -1,158 +1,103 @@
 # YdotBot
 
-A Discord bot for streamers with Twitch integration, music playback, moderation, and community queue features.
+A feature-rich Discord bot for streamers with Twitch integration, music playback, moderation, leveling, community gaming queue, and support tickets.
+
+**Status:** Fully featured and production-ready. Deployed on Railway (~$10-15/month).
+
+## Features
+
+**Discord Community:**
+- Leveling/XP system with leaderboard (`/rank`)
+- Welcome messages with customizable text
+- Support tickets (`/ticket create`)
+- Dad jokes (`/dadjoke`)
+
+**Moderation:**
+- Manual commands: `/kick`, `/ban`, `/timeout`, `/warn`, `/purge`
+- Auto-moderation: spam detection, caps filter, link blocking, banned word filter
+- Configurable escalation (3 strikes = ban)
+- Full mod-log with audit trail
+
+**Music:**
+- `/play [song]` — Queue from YouTube
+- `/skip`, `/pause`, `/resume`, `/stop` (mod-only)
+- `/queue`, `/sinfo` — Queue management
+- Auto-plays default playlists when queue is empty
+
+**Twitch Integration:**
+- Go-live alerts posted to Discord
+- Twitch chat commands: `!play [song]`, `!queue`, `!playlist`, `!discord`
+- Music requests from chat
+- Stream start announcements (`/stream-starting`)
+
+**Gaming Queue:**
+- `!join`/`!leave` in Twitch chat
+- `!queue` to view queue
+- OBS overlay at `http://localhost:3001/queue-overlay?key=<secret>`
+- Mod controls: `!next`, `!lock`, `!remove`, `!clear`
+
+**Admin:**
+- `/ydotbot-help` — Command reference for mods
+- Config commands for all features
 
 ## Local Development
 
 ### Setup
 
-1. Copy `.env.example` to `.env` and fill in your credentials:
+1. Copy `.env.example` to `.env`:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Fill in your credentials:
    - Discord bot token and client ID
    - Twitch client ID and secret
    - Your Twitch channel name
-   - A random secret for the overlay server
+   - Your Discord server invite URL
+   - Random overlay secret
 
-2. Install dependencies:
+3. Install and run:
    ```bash
    npm install
-   ```
-
-3. Run in development mode:
-   ```bash
    npm run dev
    ```
 
 ### Scripts
 
-- `npm run dev` — Start with hot reload (requires tsx)
-- `npm run build` — Compile TypeScript to JavaScript
-- `npm start` — Run the built bot
-- `npm run lint` — Check for linting issues
-- `npm run lint:fix` — Fix linting issues automatically
-- `npm run deploy` — Build and restart via pm2
+- `npm run dev` — Start with hot reload
+- `npm run build` — Compile TypeScript
+- `npm start` — Run built bot
+- `npm run lint` — Check code style
+- `npm run lint:fix` — Auto-fix code style
 
-## Deployment on Oracle Cloud
+## Deployment
 
-### Initial VM Setup
+**Recommended: Railway** (see [RAILWAY_DEPLOYMENT.md](RAILWAY_DEPLOYMENT.md) for full guide)
 
-1. Create an Ampere A1 Always Free instance on Oracle Cloud
-2. Download the SSH private key
-3. SSH into the VM: `ssh -i <key-file> ubuntu@<public-ip>`
+Railway keeps your bot running 24/7 with auto-redeploy on git push. Cost: $10-15/month.
 
-### First-Time Setup on VM
-
-```bash
-# Update system packages
-sudo apt update && sudo apt upgrade -y
-
-# Install Node.js 20
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-sudo apt install -y nodejs
-
-# Install pm2 globally
-sudo npm install -g pm2
-
-# Clone or pull the repository
-git clone <repo-url> ~/ydotbot
-cd ~/ydotbot
-
-# Install dependencies
-npm install
-
-# Build
-npm run build
-
-# Create .env from .env.example
-cp .env.example .env
-# Edit .env with your actual credentials
-nano .env
-
-# Start with pm2
-pm2 start ecosystem.config.js
-
-# Save PM2 config to auto-start on reboot
-pm2 save
-sudo env PATH=$PATH:/usr/bin /usr/lib/node_modules/pm2/bin/pm2 startup systemd -u ubuntu --hp /home/ubuntu
-```
-
-### Firewall Setup
-
-The overlay server runs on port 3001. Open it on the Oracle Cloud VM:
-
-1. Go to Oracle Cloud Console → Networking → Virtual Cloud Networks
-2. Select your VCN → Security Lists → Default Security List
-3. Add an Ingress Rule:
-   - Source CIDR: `0.0.0.0/0`
-   - Destination Port Range: `3001`
-   - Protocol: TCP
-
-Also verify the VM's OS firewall isn't blocking it:
-```bash
-# Check if port 3001 is listening
-sudo netstat -tlnp | grep 3001
-
-# If using ufw, allow the port
-sudo ufw allow 3001/tcp
-```
-
-### Deploying Updates
-
-```bash
-# On your local machine
-git add .
-git commit -m "your message"
-git push
-
-# On the VM via SSH
-cd ~/ydotbot
-git pull
-npm run deploy
-```
+**Alternative: Self-hosted** (see [DEPLOYMENT.md](DEPLOYMENT.md) for Oracle Cloud setup)
 
 ## Project Structure
 
 ```
 /src
-  /commands          (slash commands grouped by category)
-    /fun             (fun/utility commands like /ping)
-    /moderation      (kick, ban, timeout, etc.)
-    /admin           (config commands)
-  /events            (Discord event handlers)
-  /services          (Twitch integration, music player, queue)
-  /utils             (shared utilities and types)
+  /commands
+    /fun             (ping, dadjoke, rank)
+    /music           (play, skip, pause, resume, stop, queue, sinfo)
+    /moderation      (kick, ban, timeout, warn, purge)
+    /admin           (set-welcome, set-modlog, set-twitch-announce, automod, ticket, stream-starting, ydotbot-help)
+  /events            (message handling, member join)
+  /services          (music, leveling, tickets, playlists, queues, auto-mod, Twitch)
+  /utils             (env, logging, types, command loader)
   index.ts           (bot bootstrap)
-ecosystem.config.js  (pm2 configuration)
 ```
 
-## Features (Phased)
+## Data Files
 
-### Phase 0 (Current)
-- ✅ Slash command framework
-- ✅ `/ping` test command
-- ✅ Environment configuration
-- ✅ PM2 process management
+- `data/levels.json` — User levels and XP
+- `data/playlists.json` — Saved music playlists
+- `data/tickets.json` — Support ticket history
+- `data/guilds.json` — Per-guild configuration
 
-### Phase 1
-- Welcome messages
-- Basic moderation (/kick, /ban, /timeout, /warn, /purge)
-- Twitch go-live alerts via EventSub
-
-### Phase 1.5
-- Community queue (!join, !leave, !next)
-- Overlay server for queue display
-
-### Phase 2
-- Auto-moderation (spam, caps, links, banned words)
-- Persistent warning system
-- Mod log channel
-
-### Phase 3
-- `/dadjoke` command
-- Music system (play, skip, queue, playlists from YouTube)
-- `/sinfo` command (now-playing info)
-
-### Phase 4
-- Leveling/XP system
-- Giveaway system
-- Custom commands
-- Ticket system
+All data persists across bot restarts.
