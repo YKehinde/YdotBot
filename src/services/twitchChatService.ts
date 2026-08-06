@@ -2,8 +2,6 @@ import tmi from 'tmi.js';
 import { env } from '../utils/env.js';
 import { logger } from '../utils/logger.js';
 import { queueService } from './queueService.js';
-import { musicService } from './musicService.js';
-import play from 'play-dl';
 
 type CommandHandler = (
   channel: string,
@@ -73,57 +71,6 @@ export const twitchChatService = {
 
     client.on('disconnected', () => {
       logger.warn('TwitchChatService', 'Disconnected from Twitch chat');
-    });
-
-    registerCommand('play', async (channel, userstate, message) => {
-      const query = message.slice(6).trim();
-
-      if (!query) {
-        await client?.say(channel, `@${userstate.username} Usage: !play [song name or URL]`);
-        return;
-      }
-
-      try {
-        let url = query;
-
-        if (!query.startsWith('http')) {
-          const results = await play.search(query, { limit: 1 });
-          if (results.length === 0) {
-            await client?.say(channel, `@${userstate.username} No results found for "${query}"`);
-            return;
-          }
-          url = results[0].url;
-        }
-
-        const track = await musicService.queue(url, env.twitchChannel);
-
-        if (track) {
-          await client?.say(
-            channel,
-            `@${userstate.username} Queued: ${track.title} 🎵`
-          );
-        } else {
-          await client?.say(channel, `@${userstate.username} Failed to queue that track.`);
-        }
-      } catch (error) {
-        logger.error('TwitchChatService', 'Error in !play command', error);
-        await client?.say(channel, `@${userstate.username} Failed to queue that track.`);
-      }
-    });
-
-    registerCommand('playlist', async (channel) => {
-      const current = musicService.getCurrentTrack(env.twitchChannel);
-      const queue = musicService.getQueue(env.twitchChannel);
-
-      if (!current && queue.length === 0) {
-        await client?.say(channel, 'Music queue is empty.');
-        return;
-      }
-
-      let msg = current ? `Now: ${current.title} | ` : '';
-      msg += `Queue: ${queue.length} tracks | Next: ${queue[0]?.title || 'None'}`;
-
-      await client?.say(channel, msg);
     });
 
     registerCommand('queue', async (channel) => {

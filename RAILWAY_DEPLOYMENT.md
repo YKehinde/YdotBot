@@ -66,12 +66,6 @@ The bot is now running! Set up your Discord server:
    - `/set-modlog channel #mod-logs`
    - `/set-twitch-announce channel #go-live` (for stream alerts)
 
-2. **Optional: Enable Twitch chat commands**
-   - Find line 109 in `src/index.ts`
-   - Uncomment: `await twitchChatService.init();`
-   - Commit and push to GitHub
-   - Railway will auto-redeploy
-
 ## Accessing Your Bot
 
 **Public URL**: Railway gives you a public URL, but your bot doesn't need it for Discord/Twitch integration. The queue overlay will be:
@@ -117,11 +111,6 @@ However, since Discord Gateway and Twitch EventSub are **outbound connections** 
 - Check logs for errors
 - Verify Discord token is correct
 - Make sure bot has permissions in server
-
-### Twitch commands not working
-- Uncomment `twitchChatService.init()` in src/index.ts
-- Verify Twitch credentials are correct
-- Check logs for auth errors
 
 ### Database/config files not persisting
 - Railway restarts the container occasionally

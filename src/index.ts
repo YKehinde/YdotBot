@@ -19,7 +19,6 @@ import { handleTwitchStreamOnline } from './events/twitchStreamOnline.js';
 import { twitchChatService } from './services/twitchChatService.js';
 import { overlayServer } from './services/overlayServer.js';
 import { handleMessageCreate } from './events/messageCreate.js';
-import { playlistService } from './services/playlistService.js';
 import { levelingService } from './services/levelingService.js';
 import { ticketService } from './services/ticketService.js';
 
@@ -105,7 +104,6 @@ async function start() {
     logger.info('Bot', 'Environment validation passed');
 
     await configService.init();
-    await playlistService.init();
     await levelingService.init();
     await ticketService.init();
 

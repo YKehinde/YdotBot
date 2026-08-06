@@ -18,17 +18,11 @@ A feature-rich Discord bot for streamers with Twitch integration, music playback
 - Configurable escalation (3 strikes = ban)
 - Full mod-log with audit trail
 
-**Music:**
-- `/play [song]` — Queue from YouTube
-- `/skip`, `/pause`, `/resume`, `/stop` (mod-only)
-- `/queue`, `/sinfo` — Queue management
-- Auto-plays default playlists when queue is empty
-
 **Twitch Integration:**
 - Go-live alerts posted to Discord
-- Twitch chat commands: `!play [song]`, `!queue`, `!playlist`, `!discord`
-- Music requests from chat
+- Twitch chat: first-time visitor greetings
 - Stream start announcements (`/stream-starting`)
+- Chat command: `!discord` — posts Discord invite link
 
 **Gaming Queue:**
 - `!join`/`!leave` in Twitch chat
