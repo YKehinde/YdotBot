@@ -14,7 +14,7 @@ const command: Command = {
       interaction.client.ws.ping;
 
     await interaction.editReply(
-      `Pong! 🏓 Latency is ${latency}ms. WS ping is ${Math.round(interaction.client.ws.ping)}ms`
+      `Pong! 🏓 Latency is ${latency}ms. WS ping is ${Math.round(interaction.client.ws.ping)}ms.`
     );
   },
 };

@@ -11,6 +11,8 @@ import { env, validateEnv } from './utils/env.js';
 import { logger } from './utils/logger.js';
 import { loadCommands } from './utils/commandLoader.js';
 import { Command } from './utils/types.js';
+import { configService } from './services/configService.js';
+import { handleGuildMemberAdd } from './events/guildMemberAdd.js';
 
 const client = new Client({
   intents: [
@@ -18,6 +20,7 @@ const client = new Client({
     GatewayIntentBits.GuildMembers,
     GatewayIntentBits.MessageContent,
     GatewayIntentBits.DirectMessages,
+    GatewayIntentBits.GuildModeration,
   ],
 });
 
@@ -58,6 +61,8 @@ client.once('ready', async () => {
   }
 });
 
+client.on('guildMemberAdd', handleGuildMemberAdd);
+
 client.on('interactionCreate', async (interaction: Interaction) => {
   if (!interaction.isChatInputCommand()) return;
 
@@ -88,6 +93,7 @@ async function start() {
     validateEnv();
     logger.info('Bot', 'Environment validation passed');
 
+    await configService.init();
     await registerCommands();
     await client.login(env.discordToken);
   } catch (error) {
