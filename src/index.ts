@@ -13,6 +13,9 @@ import { loadCommands } from './utils/commandLoader.js';
 import { Command } from './utils/types.js';
 import { configService } from './services/configService.js';
 import { handleGuildMemberAdd } from './events/guildMemberAdd.js';
+import { twitchEventSub } from './services/twitchEventSub.js';
+import { twitchApiService } from './services/twitchApiService.js';
+import { handleTwitchStreamOnline } from './events/twitchStreamOnline.js';
 
 const client = new Client({
   intents: [
@@ -94,6 +97,10 @@ async function start() {
     logger.info('Bot', 'Environment validation passed');
 
     await configService.init();
+
+    twitchEventSub.onStreamOnline((event) => handleTwitchStreamOnline(client, event));
+    await twitchEventSub.connect();
+
     await registerCommands();
     await client.login(env.discordToken);
   } catch (error) {
