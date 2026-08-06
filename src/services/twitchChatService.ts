@@ -2,6 +2,8 @@ import tmi from 'tmi.js';
 import { env } from '../utils/env.js';
 import { logger } from '../utils/logger.js';
 import { queueService } from './queueService.js';
+import { musicService } from './musicService.js';
+import play from 'play-dl';
 
 type CommandHandler = (
   channel: string,
@@ -62,6 +64,103 @@ export const twitchChatService = {
 
     client.on('disconnected', () => {
       logger.warn('TwitchChatService', 'Disconnected from Twitch chat');
+    });
+
+    registerCommand('play', async (channel, userstate, message) => {
+      const query = message.slice(6).trim();
+
+      if (!query) {
+        await client?.say(channel, `@${userstate.username} Usage: !play [song name or URL]`);
+        return;
+      }
+
+      try {
+        let url = query;
+
+        if (!query.startsWith('http')) {
+          const results = await play.search(query, { limit: 1 });
+          if (results.length === 0) {
+            await client?.say(channel, `@${userstate.username} No results found for "${query}"`);
+            return;
+          }
+          url = results[0].url;
+        }
+
+        const track = await musicService.queue(url, env.twitchChannel);
+
+        if (track) {
+          await client?.say(
+            channel,
+            `@${userstate.username} Queued: ${track.title} 🎵`
+          );
+        } else {
+          await client?.say(channel, `@${userstate.username} Failed to queue that track.`);
+        }
+      } catch (error) {
+        logger.error('TwitchChatService', 'Error in !play command', error);
+        await client?.say(channel, `@${userstate.username} Failed to queue that track.`);
+      }
+    });
+
+    registerCommand('skip', async (channel, userstate) => {
+      const current = musicService.getCurrentTrack(env.twitchChannel);
+
+      if (!current) {
+        await client?.say(channel, 'Nothing is currently playing.');
+        return;
+      }
+
+      musicService.skip(env.twitchChannel);
+      await client?.say(channel, `Skipped: ${current.title} ⏭️`);
+    });
+
+    registerCommand('pause', async (channel) => {
+      const status = musicService.getStatus(env.twitchChannel);
+
+      if (!status.isConnected) {
+        await client?.say(channel, 'Bot is not connected to voice.');
+        return;
+      }
+
+      if (status.isPaused) {
+        await client?.say(channel, 'Already paused.');
+        return;
+      }
+
+      musicService.pause(env.twitchChannel);
+      await client?.say(channel, '⏸️ Paused');
+    });
+
+    registerCommand('resume', async (channel) => {
+      const status = musicService.getStatus(env.twitchChannel);
+
+      if (!status.isConnected) {
+        await client?.say(channel, 'Bot is not connected to voice.');
+        return;
+      }
+
+      if (!status.isPaused) {
+        await client?.say(channel, 'Already playing.');
+        return;
+      }
+
+      musicService.resume(env.twitchChannel);
+      await client?.say(channel, '▶️ Resumed');
+    });
+
+    registerCommand('queue', async (channel) => {
+      const current = musicService.getCurrentTrack(env.twitchChannel);
+      const queue = musicService.getQueue(env.twitchChannel);
+
+      if (!current && queue.length === 0) {
+        await client?.say(channel, 'Queue is empty.');
+        return;
+      }
+
+      let msg = current ? `Now: ${current.title} | ` : '';
+      msg += `Queue: ${queue.length} tracks | Next: ${queue[0]?.title || 'None'}`;
+
+      await client?.say(channel, msg);
     });
 
     registerCommand('join', async (channel, userstate) => {

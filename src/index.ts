@@ -19,6 +19,7 @@ import { handleTwitchStreamOnline } from './events/twitchStreamOnline.js';
 import { twitchChatService } from './services/twitchChatService.js';
 import { overlayServer } from './services/overlayServer.js';
 import { handleMessageCreate } from './events/messageCreate.js';
+import { playlistService } from './services/playlistService.js';
 
 const client = new Client({
   intents: [
@@ -102,6 +103,7 @@ async function start() {
     logger.info('Bot', 'Environment validation passed');
 
     await configService.init();
+    await playlistService.init();
 
     twitchEventSub.onStreamOnline((event) => handleTwitchStreamOnline(client, event));
     await twitchEventSub.connect();

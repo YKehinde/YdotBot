@@ -11,6 +11,7 @@ import {
 import { VoiceChannel, TextChannel, EmbedBuilder } from 'discord.js';
 import play from 'play-dl';
 import { logger } from '../utils/logger.js';
+import { playlistService } from './playlistService.js';
 
 export interface Track {
   title: string;
@@ -26,6 +27,8 @@ interface GuildPlayer {
   queue: Track[];
   currentTrack: Track | null;
   isPaused: boolean;
+  defaultPlaylist?: string;
+  playlistIndex?: number;
 }
 
 const players = new Map<string, GuildPlayer>();
@@ -54,6 +57,26 @@ async function playNextTrack(guildId: string, textChannel?: TextChannel) {
   const player = getOrCreatePlayer(guildId);
 
   if (player.queue.length === 0) {
+    if (player.defaultPlaylist) {
+      const playlistTracks = playlistService.getPlaylistTracks(player.defaultPlaylist);
+
+      if (playlistTracks.length > 0) {
+        player.playlistIndex = (player.playlistIndex || 0) % playlistTracks.length;
+        const trackUrl = playlistTracks[player.playlistIndex];
+        player.playlistIndex += 1;
+
+        try {
+          const track = await musicService.queue(trackUrl, guildId);
+          if (track) {
+            await playNextTrack(guildId, textChannel);
+            return;
+          }
+        } catch (error) {
+          logger.error('MusicService', 'Failed to queue default playlist track', error);
+        }
+      }
+    }
+
     player.currentTrack = null;
     return;
   }
@@ -197,5 +220,23 @@ export const musicService = {
     player.queue = [];
     player.currentTrack = null;
     player.player.stop();
+  },
+
+  setDefaultPlaylist(guildId: string, playlistName: string) {
+    const player = getOrCreatePlayer(guildId);
+    player.defaultPlaylist = playlistName;
+    player.playlistIndex = 0;
+    logger.info('MusicService', `Set default playlist for ${guildId}: ${playlistName}`);
+  },
+
+  getDefaultPlaylist(guildId: string): string | undefined {
+    const player = getOrCreatePlayer(guildId);
+    return player.defaultPlaylist;
+  },
+
+  clearDefaultPlaylist(guildId: string) {
+    const player = getOrCreatePlayer(guildId);
+    player.defaultPlaylist = undefined;
+    player.playlistIndex = 0;
   },
 };
