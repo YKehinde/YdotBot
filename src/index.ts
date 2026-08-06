@@ -112,7 +112,7 @@ async function start() {
     twitchEventSub.onStreamOnline((event) => handleTwitchStreamOnline(client, event));
     await twitchEventSub.connect();
 
-    // await twitchChatService.init();
+    await twitchChatService.init();
     await overlayServer.start();
 
     await registerCommands();
