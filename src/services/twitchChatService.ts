@@ -102,12 +102,12 @@ export const twitchChatService = {
       }
     });
 
-    registerCommand('queue', async (channel) => {
+    registerCommand('playlist', async (channel) => {
       const current = musicService.getCurrentTrack(env.twitchChannel);
       const queue = musicService.getQueue(env.twitchChannel);
 
       if (!current && queue.length === 0) {
-        await client?.say(channel, 'Queue is empty.');
+        await client?.say(channel, 'Music queue is empty.');
         return;
       }
 
@@ -115,6 +115,24 @@ export const twitchChatService = {
       msg += `Queue: ${queue.length} tracks | Next: ${queue[0]?.title || 'None'}`;
 
       await client?.say(channel, msg);
+    });
+
+    registerCommand('queue', async (channel) => {
+      const queue = queueService.getQueue(env.twitchChannel);
+      const locked = queueService.isLocked(env.twitchChannel);
+
+      if (queue.length === 0) {
+        await client?.say(channel, 'Gaming queue is empty.');
+        return;
+      }
+
+      const queueList = queue
+        .slice(0, 5)
+        .map((m, i) => `#${i + 1} ${m.username}`)
+        .join(' → ');
+
+      const status = locked ? ' [LOCKED]' : '';
+      await client?.say(channel, `Queue${status}: ${queueList}${queue.length > 5 ? ` +${queue.length - 5}` : ''}`);
     });
 
     registerCommand('join', async (channel, userstate) => {
