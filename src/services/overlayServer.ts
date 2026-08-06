@@ -2,6 +2,7 @@ import express, { Express, Request, Response } from 'express';
 import { env } from '../utils/env.js';
 import { logger } from '../utils/logger.js';
 import { queueService } from './queueService.js';
+import { musicService } from './musicService.js';
 
 let app: Express | null = null;
 
@@ -203,6 +204,38 @@ export const overlayServer = {
       `;
 
       res.type('text/html').send(html);
+    });
+
+    app.get('/api/current-song', (req: Request, res: Response) => {
+      const channel = env.twitchChannel;
+      const current = musicService.getCurrentSongInfo(channel);
+
+      if (current) {
+        res.json(current);
+      } else {
+        const nextUrl = musicService.getNextDefaultPlaylistSong(channel);
+        if (nextUrl) {
+          res.json({ url: nextUrl, isFromDefaultPlaylist: true });
+        } else {
+          res.status(404).json({ error: 'No song currently playing' });
+        }
+      }
+    });
+
+    app.post('/webhook/song-finished', (req: Request, res: Response) => {
+      const channel = env.twitchChannel;
+
+      try {
+        const nextUrl = musicService.getNextDefaultPlaylistSong(channel);
+
+        res.json({
+          success: true,
+          nextSong: nextUrl ? { url: nextUrl, isFromDefaultPlaylist: true } : null,
+        });
+      } catch (error) {
+        logger.error('OverlayServer', 'Error in song-finished webhook', error);
+        res.status(500).json({ error: 'Failed to get next song' });
+      }
     });
 
     return new Promise((resolve) => {

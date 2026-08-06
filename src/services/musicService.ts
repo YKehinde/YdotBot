@@ -10,8 +10,13 @@ import {
 } from '@discordjs/voice';
 import { VoiceChannel, TextChannel, EmbedBuilder } from 'discord.js';
 import play from 'play-dl';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { logger } from '../utils/logger.js';
 import { playlistService } from './playlistService.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export interface Track {
   title: string;
@@ -29,6 +34,8 @@ interface GuildPlayer {
   isPaused: boolean;
   defaultPlaylist?: string;
   playlistIndex?: number;
+  shuffledDefaultPlaylist?: string[];
+  defaultPlaylistPosition?: number;
 }
 
 const players = new Map<string, GuildPlayer>();
@@ -238,5 +245,58 @@ export const musicService = {
     const player = getOrCreatePlayer(guildId);
     player.defaultPlaylist = undefined;
     player.playlistIndex = 0;
+  },
+
+  loadDefaultPlaylistFromFile(channel: string) {
+    try {
+      const filePath = path.resolve(__dirname, '../../data/defaultPlaylist.json');
+      const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+      const songs = data.songs || [];
+
+      if (songs.length === 0) {
+        logger.warn('MusicService', 'Default playlist is empty');
+        return;
+      }
+
+      const shuffled = [...songs].sort(() => Math.random() - 0.5);
+      const player = getOrCreatePlayer(channel);
+
+      player.shuffledDefaultPlaylist = shuffled;
+      player.defaultPlaylistPosition = 0;
+
+      logger.info('MusicService', `Loaded and shuffled ${shuffled.length} songs for ${channel}`);
+    } catch (error) {
+      logger.error('MusicService', 'Failed to load default playlist', error);
+    }
+  },
+
+  getCurrentSongInfo(channel: string) {
+    const player = getOrCreatePlayer(channel);
+
+    if (player.currentTrack) {
+      return {
+        title: player.currentTrack.title,
+        url: player.currentTrack.url,
+        duration: player.currentTrack.duration,
+        thumbnail: player.currentTrack.thumbnail,
+        channel: player.currentTrack.channel,
+        isFromQueue: true,
+      };
+    }
+
+    return null;
+  },
+
+  getNextDefaultPlaylistSong(channel: string): string | null {
+    const player = getOrCreatePlayer(channel);
+
+    if (!player.shuffledDefaultPlaylist || player.shuffledDefaultPlaylist.length === 0) {
+      return null;
+    }
+
+    const url = player.shuffledDefaultPlaylist[player.defaultPlaylistPosition!];
+    player.defaultPlaylistPosition = (player.defaultPlaylistPosition! + 1) % player.shuffledDefaultPlaylist.length;
+
+    return url;
   },
 };

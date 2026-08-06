@@ -19,12 +19,21 @@ interface ChatCommand {
 
 const commands = new Map<string, ChatCommand>();
 let client: tmi.Client | null = null;
+const greetedUsers = new Set<string>();
 
 function registerCommand(name: string, handler: CommandHandler, modsOnly = false) {
   commands.set(name, { handler, modsOnly });
 }
 
 async function handleMessage(channel: string, userstate: tmi.ChatUserstate, message: string) {
+  const username = userstate.username!;
+
+  // First interaction greeting
+  if (!greetedUsers.has(username) && !message.startsWith('!')) {
+    greetedUsers.add(username);
+    await client?.say(channel, `Hey @${username}, welcome to the stream! 👋`);
+  }
+
   if (!message.startsWith('!')) return;
 
   const parts = message.slice(1).split(/\s+/);
