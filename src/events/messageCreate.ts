@@ -3,11 +3,31 @@ import { automodService } from '../services/automodService.js';
 import { configService } from '../services/configService.js';
 import { logModAction } from '../services/moderationService.js';
 import { logger } from '../utils/logger.js';
+import { levelingService } from '../services/levelingService.js';
+
+const xpCooldown = new Map<string, number>();
 
 export async function handleMessageCreate(message: Message) {
   if (message.author.bot || !message.guild) return;
 
   try {
+    const cooldownKey = `${message.guildId}-${message.author.id}`;
+    const now = Date.now();
+    const cooldownTime = 60000;
+
+    if (!xpCooldown.has(cooldownKey) || now - xpCooldown.get(cooldownKey)! > cooldownTime) {
+      const xpGain = Math.floor(Math.random() * 15) + 10;
+      const result = levelingService.addXP(message.author.id, message.guild!.id, xpGain);
+
+      if (result.newLevel) {
+        await message.reply(
+          `🎉 **${message.author}** just reached **Level ${result.currentLevel}**!`
+        );
+      }
+
+      xpCooldown.set(cooldownKey, now);
+    }
+
     const violations = automodService.checkMessage(
       message.author.id,
       message.guild.id,
