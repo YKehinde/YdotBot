@@ -51,7 +51,7 @@ export const twitchChatService = {
     client = new tmi.Client({
       identity: {
         username: 'YdotBot',
-        password: `oauth:${env.twitchClientSecret}`,
+        password: `oauth:${env.twitchOAuthToken}`,
       },
       channels: [env.twitchChannel],
     });

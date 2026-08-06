@@ -15,6 +15,7 @@ export const env = {
   twitchClientId: process.env.TWITCH_CLIENT_ID || '',
   twitchClientSecret: process.env.TWITCH_CLIENT_SECRET || '',
   twitchChannel: process.env.TWITCH_CHANNEL || '',
+  twitchOAuthToken: process.env.TWITCH_OAUTH_TOKEN || '',
   overlayPort: parseInt(process.env.OVERLAY_PORT || '3001', 10),
   overlaySecret: process.env.OVERLAY_SECRET || '',
   databasePath: process.env.DATABASE_PATH || './data/bot.db',
