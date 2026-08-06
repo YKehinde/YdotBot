@@ -16,6 +16,8 @@ import { handleGuildMemberAdd } from './events/guildMemberAdd.js';
 import { twitchEventSub } from './services/twitchEventSub.js';
 import { twitchApiService } from './services/twitchApiService.js';
 import { handleTwitchStreamOnline } from './events/twitchStreamOnline.js';
+import { twitchChatService } from './services/twitchChatService.js';
+import { overlayServer } from './services/overlayServer.js';
 
 const client = new Client({
   intents: [
@@ -100,6 +102,9 @@ async function start() {
 
     twitchEventSub.onStreamOnline((event) => handleTwitchStreamOnline(client, event));
     await twitchEventSub.connect();
+
+    await twitchChatService.init();
+    await overlayServer.start();
 
     await registerCommands();
     await client.login(env.discordToken);
