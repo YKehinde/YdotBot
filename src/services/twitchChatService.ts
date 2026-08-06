@@ -102,52 +102,6 @@ export const twitchChatService = {
       }
     });
 
-    registerCommand('skip', async (channel, userstate) => {
-      const current = musicService.getCurrentTrack(env.twitchChannel);
-
-      if (!current) {
-        await client?.say(channel, 'Nothing is currently playing.');
-        return;
-      }
-
-      musicService.skip(env.twitchChannel);
-      await client?.say(channel, `Skipped: ${current.title} ⏭️`);
-    });
-
-    registerCommand('pause', async (channel) => {
-      const status = musicService.getStatus(env.twitchChannel);
-
-      if (!status.isConnected) {
-        await client?.say(channel, 'Bot is not connected to voice.');
-        return;
-      }
-
-      if (status.isPaused) {
-        await client?.say(channel, 'Already paused.');
-        return;
-      }
-
-      musicService.pause(env.twitchChannel);
-      await client?.say(channel, '⏸️ Paused');
-    });
-
-    registerCommand('resume', async (channel) => {
-      const status = musicService.getStatus(env.twitchChannel);
-
-      if (!status.isConnected) {
-        await client?.say(channel, 'Bot is not connected to voice.');
-        return;
-      }
-
-      if (!status.isPaused) {
-        await client?.say(channel, 'Already playing.');
-        return;
-      }
-
-      musicService.resume(env.twitchChannel);
-      await client?.say(channel, '▶️ Resumed');
-    });
-
     registerCommand('queue', async (channel) => {
       const current = musicService.getCurrentTrack(env.twitchChannel);
       const queue = musicService.getQueue(env.twitchChannel);
