@@ -102,6 +102,20 @@ export const twitchChatService = {
       }
     });
 
+    registerCommand('so', async (channel, userstate, message) => {
+      const targetUser = message.slice(4).trim();
+
+      if (!targetUser) {
+        await client?.say(channel, `@${userstate.username} Usage: !so <username>`);
+        return;
+      }
+
+      await client?.say(
+        channel,
+        `🎉 Big shoutout to @${targetUser}! Go check out their stream at https://twitch.tv/${targetUser.toLowerCase()}`
+      );
+    });
+
     registerCommand('join', async (channel, userstate) => {
       const username = userstate.username!;
       const userId = userstate['user-id']!;
