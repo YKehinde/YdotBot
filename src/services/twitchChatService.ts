@@ -249,4 +249,10 @@ export const twitchChatService = {
   getClient() {
     return client;
   },
+
+  async say(channel: string, message: string) {
+    if (client) {
+      await client.say(channel, message);
+    }
+  },
 };

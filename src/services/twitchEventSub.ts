@@ -41,6 +41,7 @@ let twitchUserId: string | null = null;
 let reconnectUrl: string | null = null;
 let heartbeatTimeout: NodeJS.Timeout | null = null;
 let onStreamOnline: ((event: any) => void) | null = null;
+let onSubscriptionGift: ((event: any) => void) | null = null;
 
 function resetHeartbeatTimeout() {
   if (heartbeatTimeout) clearTimeout(heartbeatTimeout);
@@ -96,6 +97,50 @@ async function subscribeToStreamOnline() {
   }
 }
 
+async function subscribeToSubscriptionGift() {
+  if (!twitchUserId) {
+    logger.error('TwitchEventSub', 'No Twitch user ID available for subscription');
+    return;
+  }
+
+  try {
+    const token = await (await import('./twitchApiService.js')).twitchApiService
+      .getUserByLogin(env.twitchChannel)
+      .catch(() => null);
+
+    const response = await fetch('https://api.twitch.tv/helix/eventsub/subscriptions', {
+      method: 'POST',
+      headers: {
+        'Client-ID': env.twitchClientId,
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        type: 'channel.subscription.gift',
+        version: '1',
+        condition: {
+          broadcaster_user_id: twitchUserId,
+        },
+        transport: {
+          method: 'websocket',
+          session_id: sessionId,
+        },
+      }),
+    });
+
+    if (response.ok) {
+      logger.info('TwitchEventSub', `Subscribed to channel.subscription.gift for ${env.twitchChannel}`);
+    } else {
+      logger.warn(
+        'TwitchEventSub',
+        `Failed to subscribe to channel.subscription.gift: ${response.statusText}`
+      );
+    }
+  } catch (error) {
+    logger.error('TwitchEventSub', 'Failed to subscribe to channel.subscription.gift', error);
+  }
+}
+
 function handleMessage(data: string) {
   try {
     const message = JSON.parse(data) as EventSubMessage;
@@ -105,10 +150,14 @@ function handleMessage(data: string) {
       logger.info('TwitchEventSub', `Connected to EventSub (session: ${sessionId})`);
       resetHeartbeatTimeout();
       subscribeToStreamOnline();
+      subscribeToSubscriptionGift();
     } else if (message.metadata.message_type === 'notification') {
       resetHeartbeatTimeout();
       if (message.metadata.subscription_type === 'stream.online' && onStreamOnline) {
         onStreamOnline(message.payload.event);
+      }
+      if (message.metadata.subscription_type === 'channel.subscription.gift' && onSubscriptionGift) {
+        onSubscriptionGift(message.payload.event);
       }
     } else if (message.metadata.message_type === 'session_keepalive') {
       resetHeartbeatTimeout();
@@ -167,6 +216,10 @@ export const twitchEventSub = {
 
   onStreamOnline(callback: (event: any) => void) {
     onStreamOnline = callback;
+  },
+
+  onSubscriptionGift(callback: (event: any) => void) {
+    onSubscriptionGift = callback;
   },
 
   isConnected(): boolean {

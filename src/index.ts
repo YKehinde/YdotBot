@@ -19,6 +19,7 @@ import { handleTwitchStreamOnline } from './events/twitchStreamOnline.js';
 import { twitchChatService } from './services/twitchChatService.js';
 import { overlayServer } from './services/overlayServer.js';
 import { handleMessageCreate } from './events/messageCreate.js';
+import { handleSubscriptionGift } from './events/twitchSubscriptionGift.js';
 import { levelingService } from './services/levelingService.js';
 import { ticketService } from './services/ticketService.js';
 
@@ -108,6 +109,7 @@ async function start() {
     await ticketService.init();
 
     twitchEventSub.onStreamOnline((event) => handleTwitchStreamOnline(client, event));
+    twitchEventSub.onSubscriptionGift((event) => handleSubscriptionGift(event));
     await twitchEventSub.connect();
 
     await twitchChatService.init();
