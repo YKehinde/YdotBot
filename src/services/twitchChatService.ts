@@ -116,6 +116,10 @@ export const twitchChatService = {
       );
     });
 
+    registerCommand('lurk', async (channel, userstate) => {
+      await client?.say(channel, `Thanks for lurking @${userstate.username}! 🤫 Appreciate you being here!`);
+    });
+
     registerCommand('join', async (channel, userstate) => {
       const username = userstate.username!;
       const userId = userstate['user-id']!;
