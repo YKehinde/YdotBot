@@ -16,7 +16,8 @@ async function loadCommandsFromDir(dir: string): Promise<Command[]> {
     if (entry.isDirectory()) {
       const subCommands = await loadCommandsFromDir(fullPath);
       commands.push(...subCommands);
-    } else if (entry.isFile() && entry.name.endsWith('.ts')) {
+    } else if (entry.isFile() && (entry.name.endsWith('.js') || entry.name.endsWith('.ts'))) {
+      if (entry.name.endsWith('.d.ts')) continue;
       try {
         const module = await import(`file://${fullPath}`);
         if (module.default && module.default.data && module.default.execute) {
