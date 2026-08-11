@@ -113,10 +113,14 @@ However, since Discord Gateway and Twitch EventSub are **outbound connections** 
 - Make sure bot has permissions in server
 
 ### Database/config files not persisting
-- Railway restarts the container occasionally
-- Data is lost if stored in memory only
-- SQLite files (data/\*.json) are persisted between restarts
-- Use Railway's **Volumes** if you need guaranteed persistence (paid feature, not needed for this bot)
+- **This bot needs a Railway Volume.** `data/guilds.json` stores per-server config — including the `#go-live` announce channel — and without a mounted volume, Railway's filesystem is ephemeral: every redeploy (a `git push`, or clicking Redeploy) starts from a fresh container image and wipes anything written to `data/`. Restarts within the same deploy are fine; redeploys are not.
+- Symptom: go-live announcements silently stop after a deploy because `twitchAnnounceChannelId` reverted to unset, and nobody notices until the next stream.
+- **Fix — attach a volume:**
+  1. Go to your project → the `ydotbot` service → **"Settings"** tab
+  2. Scroll to **"Volumes"** → **"+ New Volume"**
+  3. Set the **mount path** to `/app/data` (matches `DATABASE_PATH`/the `data/` dir the bot writes to)
+  4. Save — Railway redeploys automatically with the volume attached
+  5. Re-run `/set-twitch-announce channel:#go-live` (and `/set-welcome`, `/set-modlog`) one more time after the volume is attached — this is the last time you should need to
 
 ## Upgrading Resources
 

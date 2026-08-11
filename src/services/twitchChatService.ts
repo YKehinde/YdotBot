@@ -2,6 +2,7 @@ import tmi from 'tmi.js';
 import { env } from '../utils/env.js';
 import { logger } from '../utils/logger.js';
 import { queueService } from './queueService.js';
+import { twitchAutomodService } from './twitchAutomodService.js';
 
 type CommandHandler = (
   channel: string,
@@ -25,6 +26,13 @@ function registerCommand(name: string, handler: CommandHandler, modsOnly = false
 
 async function handleMessage(channel: string, userstate: tmi.ChatUserstate, message: string) {
   const username = userstate.username!;
+  const isMod = !!(userstate.mod || userstate['user-type'] === 'mod' || userstate.badges?.moderator);
+  const isBroadcaster = userstate.badges?.broadcaster === '1';
+
+  if (client && !isMod && !isBroadcaster) {
+    const actioned = await twitchAutomodService.moderate(client, channel, userstate, message);
+    if (actioned) return;
+  }
 
   // First interaction greeting
   if (!greetedUsers.has(username) && !message.startsWith('!')) {
@@ -36,7 +44,6 @@ async function handleMessage(channel: string, userstate: tmi.ChatUserstate, mess
 
   const parts = message.slice(1).split(/\s+/);
   const cmd = parts[0].toLowerCase();
-  const isMod = !!(userstate.mod || userstate['user-type'] === 'mod' || userstate.badges?.moderator);
 
   const command = commands.get(cmd);
   if (!command) return;

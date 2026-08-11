@@ -35,13 +35,31 @@ interface EventSubMessage {
   };
 }
 
+const MAX_RECONNECT_DELAY_MS = 30000;
+
 let ws: WebSocket | null = null;
 let sessionId: string | null = null;
 let twitchUserId: string | null = null;
 let reconnectUrl: string | null = null;
 let heartbeatTimeout: NodeJS.Timeout | null = null;
+let reconnectTimeout: NodeJS.Timeout | null = null;
+let reconnectAttempts = 0;
+let intentionalDisconnect = false;
 let onStreamOnline: ((event: any) => void) | null = null;
 let onSubscriptionGift: ((event: any) => void) | null = null;
+
+function scheduleReconnect() {
+  if (reconnectTimeout) return;
+
+  const delay = Math.min(1000 * 2 ** reconnectAttempts, MAX_RECONNECT_DELAY_MS);
+  reconnectAttempts += 1;
+  logger.warn('TwitchEventSub', `Reconnecting in ${delay}ms (attempt ${reconnectAttempts})`);
+
+  reconnectTimeout = setTimeout(() => {
+    reconnectTimeout = null;
+    connect();
+  }, delay);
+}
 
 function resetHeartbeatTimeout() {
   if (heartbeatTimeout) clearTimeout(heartbeatTimeout);
@@ -147,6 +165,7 @@ function handleMessage(data: string) {
 
     if (message.metadata.message_type === 'session_welcome') {
       sessionId = message.payload.session!.id;
+      reconnectAttempts = 0;
       logger.info('TwitchEventSub', `Connected to EventSub (session: ${sessionId})`);
       resetHeartbeatTimeout();
       subscribeToStreamOnline();
@@ -176,10 +195,17 @@ function handleMessage(data: string) {
 
 export const twitchEventSub = {
   async connect() {
+    intentionalDisconnect = false;
+    if (reconnectTimeout) {
+      clearTimeout(reconnectTimeout);
+      reconnectTimeout = null;
+    }
+
     try {
       const user = await twitchApiService.getUserByLogin(env.twitchChannel);
       if (!user) {
         logger.error('TwitchEventSub', `Could not find Twitch user ${env.twitchChannel}`);
+        scheduleReconnect();
         return;
       }
 
@@ -200,13 +226,21 @@ export const twitchEventSub = {
       ws.on('close', () => {
         logger.warn('TwitchEventSub', 'WebSocket disconnected');
         if (heartbeatTimeout) clearTimeout(heartbeatTimeout);
+        ws = null;
+        if (!intentionalDisconnect) scheduleReconnect();
       });
     } catch (error) {
       logger.error('TwitchEventSub', 'Failed to connect to EventSub', error);
+      scheduleReconnect();
     }
   },
 
   disconnect() {
+    intentionalDisconnect = true;
+    if (reconnectTimeout) {
+      clearTimeout(reconnectTimeout);
+      reconnectTimeout = null;
+    }
     if (ws) {
       ws.close();
       ws = null;
