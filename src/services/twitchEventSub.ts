@@ -78,15 +78,11 @@ async function subscribeToStreamOnline() {
   }
 
   try {
-    const token = await (await import('./twitchApiService.js')).twitchApiService
-      .getUserByLogin(env.twitchChannel)
-      .catch(() => null);
-
     const response = await fetch('https://api.twitch.tv/helix/eventsub/subscriptions', {
       method: 'POST',
       headers: {
         'Client-ID': env.twitchClientId,
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${env.twitchOAuthToken}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -122,15 +118,11 @@ async function subscribeToSubscriptionGift() {
   }
 
   try {
-    const token = await (await import('./twitchApiService.js')).twitchApiService
-      .getUserByLogin(env.twitchChannel)
-      .catch(() => null);
-
     const response = await fetch('https://api.twitch.tv/helix/eventsub/subscriptions', {
       method: 'POST',
       headers: {
         'Client-ID': env.twitchClientId,
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${env.twitchOAuthToken}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
