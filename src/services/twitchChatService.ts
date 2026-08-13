@@ -19,6 +19,11 @@ interface ChatCommand {
 const commands = new Map<string, ChatCommand>();
 let client: tmi.Client | null = null;
 const greetedUsers = new Set<string>();
+let reminderInterval: NodeJS.Timeout | null = null;
+
+const REMINDER_INTERVAL_MS = 20 * 60 * 1000;
+const REMINDER_MESSAGE =
+  "Thank you for watching the stream. If you're enjoying it, please give me a follow and come back whenever you can. I also appreciate everyone lurking";
 
 function registerCommand(name: string, handler: CommandHandler, modsOnly = false) {
   commands.set(name, { handler, modsOnly });
@@ -259,6 +264,22 @@ export const twitchChatService = {
 
   isConnected(): boolean {
     return client?.readyState?.() === 'OPEN' || false;
+  },
+
+  startPeriodicReminder(channel: string) {
+    if (reminderInterval) return;
+    reminderInterval = setInterval(() => {
+      client?.say(channel, REMINDER_MESSAGE);
+    }, REMINDER_INTERVAL_MS);
+    logger.info('TwitchChatService', 'Started periodic reminder');
+  },
+
+  stopPeriodicReminder() {
+    if (reminderInterval) {
+      clearInterval(reminderInterval);
+      reminderInterval = null;
+      logger.info('TwitchChatService', 'Stopped periodic reminder');
+    }
   },
 
   getClient() {
