@@ -26,6 +26,10 @@ function registerCommand(name: string, handler: CommandHandler, modsOnly = false
 
 async function handleMessage(channel: string, userstate: tmi.ChatUserstate, message: string) {
   const username = userstate.username!;
+
+  // Ignore messages from the bot itself
+  if (username === 'YdotBot') return;
+
   const isMod = !!(userstate.mod || userstate['user-type'] === 'mod' || userstate.badges?.moderator);
   const isBroadcaster = userstate.badges?.broadcaster === '1';
 
