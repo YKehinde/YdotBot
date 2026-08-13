@@ -56,7 +56,7 @@ export async function handleTwitchStreamOnline(client: Client, event: any) {
       }
 
       try {
-        await channel.send({ embeds: [embed] });
+        await channel.send({ content: '@everyone', embeds: [embed] });
       } catch (error) {
         logger.error(
           'TwitchStreamOnline',
