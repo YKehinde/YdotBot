@@ -28,7 +28,7 @@ async function handleMessage(channel: string, userstate: tmi.ChatUserstate, mess
   const username = userstate.username!;
 
   // Ignore messages from the bot itself
-  if (username === 'YdotBot') return;
+  if (username.toLowerCase() === env.twitchChannel.toLowerCase()) return;
 
   const isMod = !!(userstate.mod || userstate['user-type'] === 'mod' || userstate.badges?.moderator);
   const isBroadcaster = userstate.badges?.broadcaster === '1';
@@ -68,7 +68,7 @@ export const twitchChatService = {
   async init() {
     client = new tmi.Client({
       identity: {
-        username: 'YdotBot',
+        username: env.twitchChannel,
         password: `oauth:${env.twitchOAuthToken}`,
       },
       channels: [env.twitchChannel],
