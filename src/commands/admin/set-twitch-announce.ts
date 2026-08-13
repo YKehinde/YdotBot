@@ -4,6 +4,7 @@ import {
   ChatInputCommandInteraction,
   ChannelType,
   PermissionFlagsBits,
+  MessageFlags,
 } from 'discord.js';
 import { Command } from '../../utils/types.js';
 import { configService } from '../../services/configService.js';
@@ -39,7 +40,7 @@ const command: Command = {
       configService.setTwitchAnnounceChannel(interaction.guildId, channel.id);
       await interaction.reply({
         content: `✅ Twitch go-live announcements will be sent to ${channel}`,
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     } else if (subcommand === 'preview') {
       const config = configService.getConfig(interaction.guildId);
@@ -49,7 +50,7 @@ const command: Command = {
 
       await interaction.reply({
         content: `**Twitch Announcement Channel:** ${channel}`,
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
   },

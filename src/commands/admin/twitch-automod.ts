@@ -3,6 +3,7 @@ import {
   CommandInteraction,
   ChatInputCommandInteraction,
   PermissionFlagsBits,
+  MessageFlags,
 } from 'discord.js';
 import { Command } from '../../utils/types.js';
 import { twitchAutomodService } from '../../services/twitchAutomodService.js';
@@ -47,13 +48,13 @@ const command: Command = {
       await interaction.reply({
         content:
           '✅ Twitch chat auto-moderation enabled. Make sure **YdotBot** is a moderator in your Twitch channel (`/mod YdotBot`), otherwise it cannot delete messages or time users out.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     } else if (subcommand === 'disable') {
       twitchAutomodService.disable();
       await interaction.reply({
         content: '✅ Twitch chat auto-moderation disabled.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     } else if (subcommand === 'add-word') {
       const word = interaction.options.getString('word', true);
@@ -61,20 +62,20 @@ const command: Command = {
       if (!words.includes(word.toLowerCase())) {
         words.push(word.toLowerCase());
         twitchAutomodService.setBannedWords(words);
-        await interaction.reply({ content: `✅ Added "${word}" to banned words.`, ephemeral: true });
+        await interaction.reply({ content: `✅ Added "${word}" to banned words.`, flags: MessageFlags.Ephemeral });
       } else {
-        await interaction.reply({ content: `"${word}" is already banned.`, ephemeral: true });
+        await interaction.reply({ content: `"${word}" is already banned.`, flags: MessageFlags.Ephemeral });
       }
     } else if (subcommand === 'remove-word') {
       const word = interaction.options.getString('word', true);
       const words = twitchAutomodService.getBannedWords().filter((w) => w !== word.toLowerCase());
       twitchAutomodService.setBannedWords(words);
-      await interaction.reply({ content: `✅ Removed "${word}" from banned words.`, ephemeral: true });
+      await interaction.reply({ content: `✅ Removed "${word}" from banned words.`, flags: MessageFlags.Ephemeral });
     } else if (subcommand === 'list-words') {
       const words = twitchAutomodService.getBannedWords();
       await interaction.reply({
         content: words.length === 0 ? 'No banned words configured.' : `**Banned words:** ${words.join(', ')}`,
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     } else if (subcommand === 'status') {
       const config = twitchAutomodService.getConfig();
@@ -90,7 +91,7 @@ Banned Words Filter: ${config.wordsEnabled ? '✅' : '❌'} (${config.bannedWord
 
 ⚠️ Escalation: 1 warning → message deleted, 2 warnings → timeout, 3 warnings → ban
 Mods and the broadcaster are always exempt.`,
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
   },

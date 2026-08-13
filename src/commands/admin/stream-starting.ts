@@ -4,6 +4,7 @@ import {
   ChatInputCommandInteraction,
   EmbedBuilder,
   PermissionFlagsBits,
+  MessageFlags,
 } from 'discord.js';
 import { Command } from '../../utils/types.js';
 import { configService } from '../../services/configService.js';
@@ -40,7 +41,7 @@ const command: Command = {
         await interaction.reply({
           content:
             'No announcement channel configured. Use `/set-twitch-announce channel` first.',
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
         return;
       }
@@ -50,7 +51,7 @@ const command: Command = {
       if (!channel || !channel.isTextBased()) {
         await interaction.reply({
           content: 'Announcement channel not found or is not a text channel.',
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
         return;
       }
@@ -77,13 +78,13 @@ const command: Command = {
 
       await interaction.reply({
         content: `✅ Stream announcement posted to ${channel}`,
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     } catch (error) {
       logger.error('StreamStarting', 'Failed to post stream announcement', error);
       await interaction.reply({
         content: 'Failed to post stream announcement.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
   },

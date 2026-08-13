@@ -3,6 +3,7 @@ import {
   CommandInteraction,
   EmbedBuilder,
   PermissionFlagsBits,
+  MessageFlags,
 } from 'discord.js';
 import { Command } from '../../utils/types.js';
 
@@ -122,7 +123,7 @@ const command: Command = {
 
     await interaction.reply({
       embeds,
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
   },
 };

@@ -5,6 +5,7 @@ import {
   ChannelType,
   PermissionFlagsBits,
   EmbedBuilder,
+  MessageFlags,
 } from 'discord.js';
 import { Command } from '../../utils/types.js';
 import { ticketService } from '../../services/ticketService.js';
@@ -92,13 +93,13 @@ const command: Command = {
 
         await interaction.reply({
           content: `✅ Ticket created: ${channel}`,
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
       } catch (error) {
         logger.error('Ticket', 'Failed to create ticket', error);
         await interaction.reply({
           content: 'Failed to create ticket.',
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
       }
     } else if (subcommand === 'close') {
@@ -108,7 +109,7 @@ const command: Command = {
         if (!ticket) {
           await interaction.reply({
             content: 'This is not a ticket channel.',
-            ephemeral: true,
+            flags: MessageFlags.Ephemeral,
           });
           return;
         }
@@ -116,7 +117,7 @@ const command: Command = {
         if (ticket.isClosed) {
           await interaction.reply({
             content: 'This ticket is already closed.',
-            ephemeral: true,
+            flags: MessageFlags.Ephemeral,
           });
           return;
         }
@@ -136,7 +137,7 @@ const command: Command = {
 
         await interaction.reply({
           content: '✅ Ticket closed. This channel will be deleted in 5 seconds.',
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
 
         setTimeout(() => {
@@ -146,7 +147,7 @@ const command: Command = {
         logger.error('Ticket', 'Failed to close ticket', error);
         await interaction.reply({
           content: 'Failed to close ticket.',
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
       }
     }

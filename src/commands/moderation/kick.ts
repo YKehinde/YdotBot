@@ -3,6 +3,7 @@ import {
   CommandInteraction,
   ChatInputCommandInteraction,
   PermissionFlagsBits,
+  MessageFlags,
 } from 'discord.js';
 import { Command } from '../../utils/types.js';
 import { logModAction } from '../../services/moderationService.js';
@@ -31,7 +32,7 @@ const command: Command = {
       if (!member.kickable) {
         await interaction.reply({
           content: "I don't have permission to kick that user.",
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
         return;
       }
@@ -47,12 +48,12 @@ const command: Command = {
 
       await interaction.reply({
         content: `✅ Kicked ${target.tag} from the server.\nReason: ${reason}`,
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     } catch (error) {
       await interaction.reply({
         content: 'Failed to kick user.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
   },

@@ -3,6 +3,7 @@ import {
   CommandInteraction,
   ChatInputCommandInteraction,
   EmbedBuilder,
+  MessageFlags,
 } from 'discord.js';
 import { Command } from '../../utils/types.js';
 import { levelingService } from '../../services/levelingService.js';
@@ -30,7 +31,7 @@ const command: Command = {
       if (!userLevel) {
         await interaction.reply({
           content: 'You have no XP yet. Start chatting to gain XP!',
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
         return;
       }
@@ -72,7 +73,7 @@ const command: Command = {
       if (leaderboard.length === 0) {
         await interaction.reply({
           content: 'No one has earned XP yet!',
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
         return;
       }

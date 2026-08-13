@@ -4,6 +4,7 @@ import {
   ChatInputCommandInteraction,
   PermissionFlagsBits,
   EmbedBuilder,
+  MessageFlags,
 } from 'discord.js';
 import { Command } from '../../utils/types.js';
 import { logModAction } from '../../services/moderationService.js';
@@ -47,12 +48,12 @@ const command: Command = {
 
       await interaction.reply({
         content: `✅ Warned ${target.tag}.\nReason: ${reason}`,
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     } catch (error) {
       await interaction.reply({
         content: 'Failed to warn user.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
   },

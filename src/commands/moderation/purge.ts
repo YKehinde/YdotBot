@@ -4,6 +4,7 @@ import {
   ChatInputCommandInteraction,
   PermissionFlagsBits,
   ChannelType,
+  MessageFlags,
 } from 'discord.js';
 import { Command } from '../../utils/types.js';
 import { logModAction } from '../../services/moderationService.js';
@@ -34,7 +35,7 @@ const command: Command = {
     if (interaction.channel?.type !== ChannelType.GuildText) {
       await interaction.reply({
         content: 'This command can only be used in text channels.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       return;
     }
@@ -59,12 +60,12 @@ const command: Command = {
 
       await interaction.reply({
         content: `✅ Deleted ${deleted.size} message(s).`,
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     } catch (error) {
       await interaction.reply({
         content: 'Failed to delete messages.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
   },

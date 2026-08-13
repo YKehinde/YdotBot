@@ -4,6 +4,7 @@ import {
   ChatInputCommandInteraction,
   ChannelType,
   PermissionFlagsBits,
+  MessageFlags,
 } from 'discord.js';
 import { Command } from '../../utils/types.js';
 import { configService } from '../../services/configService.js';
@@ -37,7 +38,7 @@ const command: Command = {
       configService.setModLogChannel(interaction.guildId, channel.id);
       await interaction.reply({
         content: `✅ Moderation logs will be sent to ${channel}`,
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     } else if (subcommand === 'preview') {
       const config = configService.getConfig(interaction.guildId);
@@ -45,7 +46,7 @@ const command: Command = {
 
       await interaction.reply({
         content: `**Moderation Log Channel:** ${channel}`,
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
   },

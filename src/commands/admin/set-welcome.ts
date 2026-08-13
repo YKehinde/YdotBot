@@ -4,6 +4,7 @@ import {
   ChatInputCommandInteraction,
   ChannelType,
   PermissionFlagsBits,
+  MessageFlags,
 } from 'discord.js';
 import { Command } from '../../utils/types.js';
 import { configService } from '../../services/configService.js';
@@ -46,7 +47,7 @@ const command: Command = {
     if (!interaction.guildId) {
       await interaction.reply({
         content: 'This command can only be used in a server!',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       return;
     }
@@ -58,14 +59,14 @@ const command: Command = {
       configService.setWelcomeChannel(interaction.guildId, channel.id);
       await interaction.reply({
         content: `✅ Welcome messages will be sent to ${channel}`,
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     } else if (subcommand === 'message') {
       const text = interaction.options.getString('text', true);
       configService.setWelcomeMessage(interaction.guildId, text);
       await interaction.reply({
         content: `✅ Welcome message updated!`,
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     } else if (subcommand === 'preview') {
       const config = configService.getConfig(interaction.guildId);
@@ -76,7 +77,7 @@ const command: Command = {
 
       await interaction.reply({
         content: `**Welcome Channel:** ${channel}\n**Welcome Message:** ${message}`,
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
   },

@@ -3,6 +3,7 @@ import {
   CommandInteraction,
   ChatInputCommandInteraction,
   PermissionFlagsBits,
+  MessageFlags,
 } from 'discord.js';
 import { Command } from '../../utils/types.js';
 import { configService } from '../../services/configService.js';
@@ -56,13 +57,13 @@ const command: Command = {
       configService.enableAutomod(interaction.guildId);
       await interaction.reply({
         content: '✅ Auto-moderation enabled for this server.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     } else if (subcommand === 'disable') {
       configService.disableAutomod(interaction.guildId);
       await interaction.reply({
         content: '✅ Auto-moderation disabled for this server.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     } else if (subcommand === 'add-word') {
       const word = interaction.options.getString('word', true);
@@ -72,12 +73,12 @@ const command: Command = {
         configService.setBannedWords(interaction.guildId, words);
         await interaction.reply({
           content: `✅ Added "${word}" to banned words.`,
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
       } else {
         await interaction.reply({
           content: `"${word}" is already banned.`,
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
       }
     } else if (subcommand === 'remove-word') {
@@ -87,19 +88,19 @@ const command: Command = {
       configService.setBannedWords(interaction.guildId, words);
       await interaction.reply({
         content: `✅ Removed "${word}" from banned words.`,
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     } else if (subcommand === 'list-words') {
       const words = configService.getBannedWords(interaction.guildId);
       if (words.length === 0) {
         await interaction.reply({
           content: 'No banned words configured.',
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
       } else {
         await interaction.reply({
           content: `**Banned words:** ${words.join(', ')}`,
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
       }
     } else if (subcommand === 'status') {
@@ -116,7 +117,7 @@ Links Filter: ${config.automodLinksEnabled ? '✅' : '❌'}
 Banned Words Filter: ${config.automodWordsEnabled ? '✅' : '❌'} (${words.length} words)
 
 ⚠️ Escalation: 1 warning → message deleted, 2 warnings → timeout, 3 warnings → ban`,
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
   },

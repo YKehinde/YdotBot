@@ -6,6 +6,7 @@ import {
   Collection,
   Interaction,
   ActivityType,
+  MessageFlags,
 } from 'discord.js';
 import { env, validateEnv } from './utils/env.js';
 import { logger } from './utils/logger.js';
@@ -64,7 +65,7 @@ async function registerCommands() {
   }
 }
 
-client.once('ready', async () => {
+client.once('clientReady', async () => {
   logger.info('Bot', `Logged in as ${client.user?.tag}`);
   logger.info('Bot', `Connected to ${client.guilds.cache.size} guild(s)`);
   if (client.user) {
@@ -84,7 +85,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
     logger.warn('Bot', `Unknown command: ${interaction.commandName}`);
     await interaction.reply({
       content: "That command doesn't exist!",
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
     return;
   }
@@ -95,7 +96,7 @@ client.on('interactionCreate', async (interaction: Interaction) => {
     logger.error('Bot', `Error executing ${interaction.commandName}`, error);
     await interaction.reply({
       content: 'There was an error while executing this command!',
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
   }
 });

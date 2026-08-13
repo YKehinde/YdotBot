@@ -3,6 +3,7 @@ import {
   CommandInteraction,
   ChatInputCommandInteraction,
   PermissionFlagsBits,
+  MessageFlags,
 } from 'discord.js';
 import { Command } from '../../utils/types.js';
 import { logModAction } from '../../services/moderationService.js';
@@ -39,7 +40,7 @@ const command: Command = {
       if (member && !member.bannable) {
         await interaction.reply({
           content: "I don't have permission to ban that user.",
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
         return;
       }
@@ -55,12 +56,12 @@ const command: Command = {
 
       await interaction.reply({
         content: `✅ Banned ${target.tag} from the server.\nReason: ${reason}`,
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     } catch (error) {
       await interaction.reply({
         content: 'Failed to ban user.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
   },

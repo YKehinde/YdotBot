@@ -3,6 +3,7 @@ import {
   CommandInteraction,
   ChatInputCommandInteraction,
   PermissionFlagsBits,
+  MessageFlags,
 } from 'discord.js';
 import { Command } from '../../utils/types.js';
 import { logModAction } from '../../services/moderationService.js';
@@ -54,7 +55,7 @@ const command: Command = {
     if (!seconds || seconds > 2419200) {
       await interaction.reply({
         content: 'Invalid duration. Use format like: 10s, 5m, 1h, 7d (max 28 days)',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       return;
     }
@@ -65,7 +66,7 @@ const command: Command = {
       if (!member.moderatable) {
         await interaction.reply({
           content: "I don't have permission to timeout that user.",
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
         return;
       }
@@ -82,12 +83,12 @@ const command: Command = {
 
       await interaction.reply({
         content: `✅ Timed out ${target.tag} for ${durationStr}.\nReason: ${reason}`,
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     } catch (error) {
       await interaction.reply({
         content: 'Failed to timeout user.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
   },
