@@ -29,7 +29,7 @@ const CONFIG_FILE = path.join(DATA_DIR, 'twitch-automod.json');
 const DEFAULT_CONFIG: TwitchAutomodConfig = {
   enabled: false,
   spamEnabled: true,
-  capsEnabled: true,
+  capsEnabled: false,
   linksEnabled: true,
   wordsEnabled: true,
   spamThreshold: 5,
