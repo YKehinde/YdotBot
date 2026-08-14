@@ -31,9 +31,7 @@ function registerCommand(name: string, handler: CommandHandler, modsOnly = false
 
 async function handleMessage(channel: string, userstate: tmi.ChatUserstate, message: string) {
   const username = userstate.username!;
-
-  // Ignore messages from the bot itself
-  if (username.toLowerCase() === env.twitchChannel.toLowerCase()) return;
+  const isSelf = username.toLowerCase() === env.twitchChannel.toLowerCase();
 
   const isMod = !!(userstate.mod || userstate['user-type'] === 'mod' || userstate.badges?.moderator);
   const isBroadcaster = userstate.badges?.broadcaster === '1';
@@ -43,8 +41,8 @@ async function handleMessage(channel: string, userstate: tmi.ChatUserstate, mess
     if (actioned) return;
   }
 
-  // First interaction greeting
-  if (!greetedUsers.has(username) && !message.startsWith('!')) {
+  // First interaction greeting (skip for the bot/broadcaster's own account)
+  if (!isSelf && !greetedUsers.has(username) && !message.startsWith('!')) {
     greetedUsers.add(username);
     await client?.say(channel, `Hey @${username}, welcome to the stream! 👋`);
   }
