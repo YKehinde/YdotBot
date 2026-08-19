@@ -1,7 +1,6 @@
-import { Client, TextChannel, EmbedBuilder } from 'discord.js';
+import { Client, TextChannel } from 'discord.js';
 import { twitchApiService } from '../services/twitchApiService.js';
 import { configService } from '../services/configService.js';
-import { env } from '../utils/env.js';
 import { logger } from '../utils/logger.js';
 
 export async function handleTwitchStreamOnline(client: Client, event: any) {
@@ -18,25 +17,7 @@ export async function handleTwitchStreamOnline(client: Client, event: any) {
       return;
     }
 
-    const embed = new EmbedBuilder()
-      .setColor('#9146FF')
-      .setTitle(`🔴 ${stream.user_name} is now live on Twitch!`)
-      .setDescription(stream.title)
-      .addFields(
-        {
-          name: 'Game',
-          value: stream.game_name || 'No category',
-          inline: true,
-        },
-        {
-          name: 'Viewers',
-          value: stream.viewer_count.toString(),
-          inline: true,
-        }
-      )
-      .setImage(stream.thumbnail_url)
-      .setURL(`https://twitch.tv/${stream.user_login}`)
-      .setTimestamp();
+    const content = `🔴 **${stream.user_name}** is live on Twitch!\n@everyone\nhttps://twitch.tv/${stream.user_login}`;
 
     for (const guild of client.guilds.cache.values()) {
       const config = configService.getConfig(guild.id);
@@ -56,7 +37,7 @@ export async function handleTwitchStreamOnline(client: Client, event: any) {
       }
 
       try {
-        await channel.send({ content: '@everyone', embeds: [embed] });
+        await channel.send({ content });
       } catch (error) {
         logger.error(
           'TwitchStreamOnline',

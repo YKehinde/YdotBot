@@ -111,11 +111,16 @@ async function start() {
     await ticketService.init();
     await twitchAutomodService.init();
 
+    let isStreamLive = false;
+
     twitchEventSub.onStreamOnline((event) => {
+      if (isStreamLive) return;
+      isStreamLive = true;
       handleTwitchStreamOnline(client, event);
       twitchChatService.startPeriodicReminder(env.twitchChannel);
     });
     twitchEventSub.onStreamOffline(() => {
+      isStreamLive = false;
       twitchChatService.stopPeriodicReminder();
     });
     twitchEventSub.onSubscriptionGift((event) => handleSubscriptionGift(event));
