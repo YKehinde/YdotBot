@@ -51,14 +51,19 @@ See `/ydotbot-help` in Discord for the full, up-to-date command list.
 2. Fill in your credentials:
    - Discord bot token and client ID
    - Twitch client ID and secret
-   - Twitch OAuth token (needs `chat:read`, `chat:edit`, `user:read:email` scopes) — the bot logs into Twitch chat as this token's own account
-   - Your Twitch channel name (must match the OAuth token's username)
+   - Your Twitch channel name (must match the account you authorize in the next step)
    - Your Discord server invite URL
    - Random overlay secret
 
-3. Install and run:
+3. Install dependencies, then get a Twitch refresh token (needs `chat:read`, `chat:edit`, `channel:read:subscriptions`, `user:read:email` scopes — the bot logs into Twitch chat as this account and needs `channel:read:subscriptions` for gift-sub shoutouts):
    ```bash
    npm install
+   npm run twitch:auth
+   ```
+   This opens a one-time browser authorization and prints a `TWITCH_REFRESH_TOKEN` to add to `.env`. Log into twitch.tv as the bot/broadcaster account first, and make sure `http://localhost:4390/callback` is listed under your Twitch app's OAuth Redirect URLs at [dev.twitch.tv/console/apps](https://dev.twitch.tv/console/apps). The bot exchanges this for access tokens itself on startup and keeps renewing them — you only do this once (a new one is only needed if the refresh token is revoked).
+
+4. Run:
+   ```bash
    npm run dev
    ```
 

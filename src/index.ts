@@ -18,6 +18,7 @@ import { twitchEventSub } from './services/twitchEventSub.js';
 import { twitchApiService } from './services/twitchApiService.js';
 import { handleTwitchStreamOnline } from './events/twitchStreamOnline.js';
 import { twitchChatService } from './services/twitchChatService.js';
+import { twitchUserTokenService } from './services/twitchUserTokenService.js';
 import { twitchAutomodService } from './services/twitchAutomodService.js';
 import { overlayServer } from './services/overlayServer.js';
 import { handleMessageCreate } from './events/messageCreate.js';
@@ -94,11 +95,21 @@ client.on('interactionCreate', async (interaction: Interaction) => {
     await command.execute(interaction);
   } catch (error) {
     logger.error('Bot', `Error executing ${interaction.commandName}`, error);
-    await interaction.reply({
-      content: 'There was an error while executing this command!',
-      flags: MessageFlags.Ephemeral,
-    });
+    try {
+      const content = 'There was an error while executing this command!';
+      if (interaction.replied || interaction.deferred) {
+        await interaction.followUp({ content, flags: MessageFlags.Ephemeral });
+      } else {
+        await interaction.reply({ content, flags: MessageFlags.Ephemeral });
+      }
+    } catch (replyError) {
+      logger.error('Bot', `Failed to report error for ${interaction.commandName}`, replyError);
+    }
   }
+});
+
+process.on('unhandledRejection', (error) => {
+  logger.error('Bot', 'Unhandled promise rejection', error);
 });
 
 async function start() {
@@ -110,6 +121,7 @@ async function start() {
     await levelingService.init();
     await ticketService.init();
     await twitchAutomodService.init();
+    await twitchUserTokenService.init();
 
     let isStreamLive = false;
 

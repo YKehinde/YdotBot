@@ -109,6 +109,7 @@ Fill in:
 - `TWITCH_CLIENT_ID` — From Twitch Developer Console
 - `TWITCH_CLIENT_SECRET` — From Twitch Developer Console
 - `TWITCH_CHANNEL` — Your Twitch username
+- `TWITCH_REFRESH_TOKEN` — Run `npm run twitch:auth` locally (see README) and paste the printed value. Since this VM has a persistent disk, the bot's self-refreshed token in `data/twitch-user-token.json` survives restarts and redeploys — you should only need to do this once.
 - `OVERLAY_SECRET` — Generate a random string (e.g., `openssl rand -hex 32`)
 
 **Save** (Ctrl+O, Enter, Ctrl+X in nano)

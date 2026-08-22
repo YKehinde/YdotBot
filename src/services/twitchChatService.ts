@@ -3,6 +3,7 @@ import { env } from '../utils/env.js';
 import { logger } from '../utils/logger.js';
 import { queueService } from './queueService.js';
 import { twitchAutomodService } from './twitchAutomodService.js';
+import { twitchUserTokenService } from './twitchUserTokenService.js';
 
 type CommandHandler = (
   channel: string,
@@ -72,7 +73,7 @@ export const twitchChatService = {
     client = new tmi.Client({
       identity: {
         username: env.twitchChannel,
-        password: `oauth:${env.twitchOAuthToken}`,
+        password: async () => `oauth:${await twitchUserTokenService.getAccessToken()}`,
       },
       channels: [env.twitchChannel],
     });
@@ -85,24 +86,6 @@ export const twitchChatService = {
 
     client.on('disconnected', () => {
       logger.warn('TwitchChatService', 'Disconnected from Twitch chat');
-    });
-
-    registerCommand('queue', async (channel) => {
-      const queue = queueService.getQueue(env.twitchChannel);
-      const locked = queueService.isLocked(env.twitchChannel);
-
-      if (queue.length === 0) {
-        await client?.say(channel, 'Gaming queue is empty.');
-        return;
-      }
-
-      const queueList = queue
-        .slice(0, 5)
-        .map((m, i) => `#${i + 1} ${m.username}`)
-        .join(' → ');
-
-      const status = locked ? ' [LOCKED]' : '';
-      await client?.say(channel, `Queue${status}: ${queueList}${queue.length > 5 ? ` +${queue.length - 5}` : ''}`);
     });
 
     registerCommand('discord', async (channel) => {

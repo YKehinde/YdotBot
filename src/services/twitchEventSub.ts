@@ -2,6 +2,7 @@ import WebSocket from 'ws';
 import { env } from '../utils/env.js';
 import { logger } from '../utils/logger.js';
 import { twitchApiService } from './twitchApiService.js';
+import { twitchUserTokenService } from './twitchUserTokenService.js';
 
 interface EventSubMessage {
   metadata: {
@@ -78,12 +79,18 @@ async function subscribeToStreamOnline() {
     return;
   }
 
+  if (!twitchUserTokenService.isReady()) {
+    logger.warn('TwitchEventSub', 'Skipping stream.online subscription — no Twitch user token available');
+    return;
+  }
+
   try {
+    const userToken = await twitchUserTokenService.getAccessToken();
     const response = await fetch('https://api.twitch.tv/helix/eventsub/subscriptions', {
       method: 'POST',
       headers: {
         'Client-ID': env.twitchClientId,
-        Authorization: `Bearer ${env.twitchOAuthToken}`,
+        Authorization: `Bearer ${userToken}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -118,12 +125,18 @@ async function subscribeToStreamOffline() {
     return;
   }
 
+  if (!twitchUserTokenService.isReady()) {
+    logger.warn('TwitchEventSub', 'Skipping stream.offline subscription — no Twitch user token available');
+    return;
+  }
+
   try {
+    const userToken = await twitchUserTokenService.getAccessToken();
     const response = await fetch('https://api.twitch.tv/helix/eventsub/subscriptions', {
       method: 'POST',
       headers: {
         'Client-ID': env.twitchClientId,
-        Authorization: `Bearer ${env.twitchOAuthToken}`,
+        Authorization: `Bearer ${userToken}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -158,12 +171,21 @@ async function subscribeToSubscriptionGift() {
     return;
   }
 
+  if (!twitchUserTokenService.isReady()) {
+    logger.warn(
+      'TwitchEventSub',
+      'Skipping channel.subscription.gift subscription — no Twitch user token available'
+    );
+    return;
+  }
+
   try {
+    const userToken = await twitchUserTokenService.getAccessToken();
     const response = await fetch('https://api.twitch.tv/helix/eventsub/subscriptions', {
       method: 'POST',
       headers: {
         'Client-ID': env.twitchClientId,
-        Authorization: `Bearer ${env.twitchOAuthToken}`,
+        Authorization: `Bearer ${userToken}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({

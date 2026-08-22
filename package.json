@@ -10,7 +10,8 @@
     "start": "node dist/index.js",
     "deploy": "npm run build && pm2 restart ydotbot",
     "lint": "eslint src --ext .ts",
-    "lint:fix": "eslint src --ext .ts --fix"
+    "lint:fix": "eslint src --ext .ts --fix",
+    "twitch:auth": "tsx scripts/twitch-auth.ts"
   },
   "keywords": [
     "discord",

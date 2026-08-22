@@ -37,11 +37,14 @@ Once the project is created:
    - `TWITCH_CLIENT_ID` = your Twitch client ID
    - `TWITCH_CLIENT_SECRET` = your Twitch secret
    - `TWITCH_CHANNEL` = your Twitch username
+   - `TWITCH_REFRESH_TOKEN` = run `npm run twitch:auth` locally to generate this (see README)
    - `OVERLAY_SECRET` = random secret (e.g., `openssl rand -hex 32`)
    - `OVERLAY_PORT` = `3001`
    - `NODE_ENV` = `production`
 
 4. Click **"Deploy"** to redeploy with the new variables
+
+**Note on the Twitch token:** the bot writes its self-refreshed Twitch user token to `data/twitch-user-token.json` on disk so restarts don't need a fresh exchange. Railway's filesystem is ephemeral — it's wiped on every redeploy — so each redeploy falls back to the `TWITCH_REFRESH_TOKEN` env var. Twitch may rotate the refresh token on each exchange and invalidate the previous one, so it's possible a redeploy breaks Twitch auth again if the env var is now stale; if you see chat/go-live stop working right after a Railway redeploy, re-run `npm run twitch:auth` and update the env var. This is one more reason a host with a persistent disk (e.g. the Pi) is the better long-term target.
 
 ## Step 3: Verify Deployment
 
